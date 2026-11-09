@@ -1,0 +1,539 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CYBER_HACKER // PROTOCOL</title>
+    <style>
+        /* SETTINGS DESIGN THEME CYBERPUNK */
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&display=swap');
+
+        :root {
+            --primary-neon: #0ff;
+            --secondary-neon: #f0f;
+            --alert-red: #ff0055;
+            --dark-bg: #050505;
+            --terminal-text: #00ff00;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            color: var(--primary-neon);
+            font-family: 'Share Tech Mono', monospace;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* HEADER UI */
+        header {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            animation: glitch 0.2s infinite alternate;
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            color: var(--secondary-neon);
+            text-shadow: 0 0 5px var(--secondary-neon), 0 0 10px var(--secondary-neon);
+        }
+
+        .status-bar {
+            margin-top: 5px;
+            font-size: 0.8rem;
+            display: flex;
+            gap: 15px;
+        }
+
+        .blink {
+            animation: blinker 1s linear infinite;
+        }
+
+        /* GAME AREA */
+        #game-container {
+            position: relative;
+            border: 2px solid var(--primary-neon);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+            cursor: crosshair;
+        }
+
+        canvas {
+            display: block;
+            background: radial-gradient(circle, #111 0%, #000 100%);
+        }
+
+        /* HUD OVERLAY */
+        .hud {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            text-align: right;
+            font-size: 1.2rem;
+            text-shadow: 0 0 5px var(--primary-neon);
+        }
+
+        .hud span {
+            display: block;
+        }
+
+        /* HEALTH BAR */
+        .health-container {
+            width: 200px;
+            height: 10px;
+            background: #333;
+            border: 1px solid var(--primary-neon);
+            margin-top: 5px;
+            overflow: hidden;
+        }
+
+        #health-fill {
+            width: 100%;
+            height: 100%;
+            background-color: var(--primary-neon);
+            transition: width 0.2s ease-out, background-color 0.2s;
+        }
+
+        /* START SCREEN OVERLAY */
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+            backdrop-filter: blur(5px);
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 15px 30px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            background: transparent;
+            color: var(--primary-neon);
+            border: 2px solid var(--primary-neon);
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+
+        button:hover {
+            background: var(--primary-neon);
+            color: #000;
+            box-shadow: 0 0 20px var(--primary-neon);
+        }
+
+        /* ANIMATIONS */
+        @keyframes blinker {
+            50% { opacity: 0; }
+        }
+
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+            100% { transform: translate(0); }
+        }
+
+        /* INSTRUCTIONS FOOTER */
+        footer {
+            position: absolute;
+            bottom: 10px;
+            font-size: 0.7rem;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>CYBER_HACKER</h1>
+        <div class="status-bar">
+            <span class="blink">● SYSTEM ONLINE</span>
+            <span>NET: SECURE</span>
+        </div>
+    </header>
+
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+        
+        <div class="hud">
+            <span id="score-display">SKOR: 0</span>
+            <span>LEVEL:</span>
+            <span id="level-display">1</span>
+            <div class="health-container">
+                <div id="health-fill"></div>
+            </div>
+            <span id="health-text">100%</span>
+        </div>
+
+        <div id="start-screen">
+            <h2 style="margin-bottom: 10px; color: var(--secondary-neon);">MISSION ACCEPTED</h2>
+            <p style="max-width: 400px; text-align: center; line-height: 1.5;">
+                Target: <span style="color: var(--alert-red)">AI BOT NETWORK</span><br>
+                Gunakan <strong>MOUSE CLICK</strong> untuk menembak malware dan virus yang masuk.<br>
+                Jangan biarkan mereka mencapai bagian bawah layar!
+            </p>
+            <button onclick="startGame()">START MISSION</button>
+        </div>
+    </div>
+
+    <footer>// ENCRYPTION: AES-256 // NO LAG // 60FPS</footer>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const startScreen = document.getElementById('start-screen');
+        const scoreEl = document.getElementById('score-display');
+        const levelEl = document.getElementById('level-display');
+        const healthFill = document.getElementById('health-fill');
+        const healthText = document.getElementById('health-text');
+
+        let width, height;
+        let animationId;
+        let lastTime = 0;
+        let score = 0;
+        let level = 1;
+        let health = 100;
+        let isGameRunning = false;
+        let spawnInterval;
+        let difficultyMultiplier = 1;
+
+        // Entities
+        let bots = [];
+        let particles = [];
+        let shots = [];
+
+        // Resize canvas
+        function resize() {
+            const container = document.getElementById('game-container');
+            width = container.clientWidth;
+            height = container.clientHeight;
+            canvas.width = width;
+            canvas.height = height;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // Classes
+        class Bot {
+            constructor() {
+                this.radius = Math.random() * 15 + 15; // Size between 15 and 30
+                this.x = Math.random() * (width - this.radius * 2) + this.radius;
+                this.y = -this.radius;
+                this.speed = (Math.random() * 1.5 + 0.5) * difficultyMultiplier;
+                this.color = `hsl(${Math.random() * 60 + 300}, 100%, 50%)`; // Purple/Pink hues
+                this.angle = Math.PI / 4;
+                this.angleSpeed = (Math.random() - 0.5) * 0.1;
+            }
+
+            update() {
+                this.y += this.speed;
+                this.angle += this.angleSpeed;
+                // Slight zigzag movement
+                this.x += Math.sin(this.angle) * 1.5;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle);
+                
+                // Draw a jagged bot shape
+                ctx.beginPath();
+                for (let i = 0; i < 6; i++) {
+                    const angle = (Math.PI / 3) * i;
+                    const r = this.radius;
+                    ctx.lineTo(Math.cos(angle) * r, Math.sin(angle) * r);
+                }
+                ctx.closePath();
+                ctx.fillStyle = this.color;
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = this.color;
+                ctx.fill();
+                
+                // Inner eye
+                ctx.beginPath();
+                ctx.arc(0, 0, this.radius * 0.3, 0, Math.PI * 2);
+                ctx.fillStyle = '#fff';
+                ctx.fill();
+
+                ctx.restore();
+            }
+        }
+
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.color = color;
+                const angle = Math.random() * Math.PI * 2;
+                const velocity = Math.random() * 4 + 1;
+                this.vx = Math.cos(angle) * velocity;
+                this.vy = Math.sin(angle) * velocity;
+                this.alpha = 1;
+                this.friction = 0.95;
+            }
+
+            update() {
+                this.vx *= this.friction;
+                this.vy *= this.friction;
+                this.x += this.vx;
+                this.y += this.vy;
+                this.alpha -= 0.02;
+            }
+
+            draw() {
+                ctx.globalAlpha = this.alpha;
+                ctx.fillStyle = this.color;
+                ctx.fillRect(this.x, this.y, 3, 3);
+                ctx.globalAlpha = 1;
+            }
+        }
+
+        class Shot {
+            constructor(targetX, targetY) {
+                this.x = width / 2;
+                this.y = height - 20;
+                this.targetX = targetX;
+                this.targetY = targetY;
+                this.speed = 15;
+                this.radius = 4;
+                // Calculate vector
+                const dx = targetX - this.x;
+                const dy = targetY - this.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                this.vx = (dx / distance) * this.speed;
+                this.vy = (dy / distance) * this.speed;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = '#0ff';
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#0ff';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        // Game Logic
+        function startGame() {
+            startScreen.style.display = 'none';
+            isGameRunning = true;
+            score = 0;
+            level = 1;
+            health = 100;
+            bots = [];
+            particles = [];
+            shots = [];
+            difficultyMultiplier = 1;
+            
+            updateHUD();
+            
+            // Start spawning bots
+            if (spawnInterval) clearInterval(spawnInterval);
+            spawnInterval = setInterval(() => {
+                if(isGameRunning && bots.length < 20) {
+                    bots.push(new Bot());
+                    // Increase difficulty every 5 points
+                    if (score > 0 && score % 5 === 0) {
+                        level++;
+                        difficultyMultiplier += 0.2;
+                        clearInterval(spawnInterval);
+                        spawnInterval = setInterval(() => {
+                            if(isGameRunning && bots.length < 30) {
+                                bots.push(new Bot());
+                            }
+                        }, 1000); // Faster spawn
+                    }
+                }
+            }, 800);
+
+            lastTime = performance.now();
+            loop();
+        }
+
+        function createExplosion(x, y, color) {
+            for (let i = 0; i < 10; i++) {
+                particles.push(new Particle(x, y, color));
+            }
+        }
+
+        function handleClick(e) {
+            if (!isGameRunning) return;
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            
+            shots.push(new Shot(mouseX, mouseY));
+        }
+
+        canvas.addEventListener('mousedown', handleClick);
+
+        function updateHUD() {
+            scoreEl.innerText = `SKOR: ${score}`;
+            levelEl.innerText = level;
+            healthFill.style.width = `${health}%`;
+            healthText.innerText = `${health}%`;
+            
+            if (health > 50) healthFill.style.backgroundColor = '#0ff';
+            else if (health > 25) healthFill.style.backgroundColor = '#ff0';
+            else healthFill.style.backgroundColor = '#f00';
+        }
+
+        function checkCollisions() {
+            // Check shots hitting bots
+            for (let i = shots.length - 1; i >= 0; i--) {
+                const s = shots[i];
+                let hit = false;
+                for (let j = bots.length - 1; j >= 0; j--) {
+                    const b = bots[j];
+                    const dx = s.x - b.x;
+                    const dy = s.y - b.y;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    
+                    if (dist < b.radius + s.radius) {
+                        hit = true;
+                        bots.splice(j, 1);
+                        score += 10;
+                        createExplosion(b.x, b.y, b.color);
+                        break;
+                    }
+                }
+                if (hit) shots.splice(i, 1);
+            }
+
+            // Check bots hitting bottom (damage player)
+            for (let i = bots.length - 1; i >= 0; i--) {
+                const b = bots[i];
+                if (b.y > height - 10) {
+                    bots.splice(i, 1);
+                    health -= 10;
+                    createExplosion(b.x, height - 10, '#ff0055');
+                }
+            }
+        }
+
+        function update() {
+            // Update Bots
+            bots.forEach(bot => bot.update());
+            
+            // Remove off-screen bots
+            bots = bots.filter(bot => bot.y < height + 50);
+
+            // Update Shots
+            shots.forEach(shot => shot.update());
+            shots = shots.filter(shot => shot.x > 0 && shot.x < width && shot.y > 0 && shot.y < height);
+
+            // Update Particles
+            particles.forEach(p => p.update());
+            particles = particles.filter(p => p.alpha > 0);
+
+            checkCollisions();
+
+            if (health <= 0) {
+                isGameRunning = false;
+                clearInterval(spawnInterval);
+                cancelAnimationFrame(animationId);
+                ctx.fillStyle = 'rgba(0,0,0,0.75)';
+                ctx.fillRect(0, 0, width, height);
+                ctx.fillStyle = '#f00';
+                ctx.font = '40px Orbitron';
+                ctx.textAlign = 'center';
+                ctx.fillText('SYSTEM CRITICAL FAILURE', width/2, height/2 - 20);
+                ctx.fillStyle = '#fff';
+                ctx.font = '20px Share Tech Mono';
+                ctx.fillText('RETRY MISSION', width/2, height/2 + 30);
+                
+                // Add retry button dynamically
+                const btn = document.createElement('button');
+                btn.innerText = 'RETRY';
+                btn.onclick = () => location.reload();
+                document.body.appendChild(btn);
+            }
+        }
+
+        function draw() {
+            // Clear screen with slight trail effect for motion blur feel
+            ctx.fillStyle = 'rgba(5, 5, 5, 0.3)';
+            ctx.fillRect(0, 0, width, height);
+
+            // Draw Grid Background
+            ctx.strokeStyle = 'rgba(0, 255, 255, 0.05)';
+            ctx.lineWidth = 1;
+            const gridSize = 50;
+            for (let x = 0; x < width; x += gridSize) {
+                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke();
+            }
+            for (let y = 0; y < height; y += gridSize) {
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y); ctx.stroke();
+            }
+
+            // Draw Bots
+            bots.forEach(bot => bot.draw());
+
+            // Draw Shots
+            shots.forEach(shot => shot.draw());
+
+            // Draw Particles
+            particles.forEach(p => p.draw());
+
+            // Draw Bottom Defense Line
+            ctx.strokeStyle = '#ff0055';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([10, 10]);
+            ctx.beginPath();
+            ctx.moveTo(0, height - 5);
+            ctx.lineTo(width, height - 5);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            ctx.fillStyle = '#ff0055';
+            ctx.font = '12px Share Tech Mono';
+            ctx.fillText('DEFENSE ZONE', 10, height - 10);
+        }
+
+        function loop() {
+            if (!isGameRunning) return;
+            update();
+            draw();
+            animationId = requestAnimationFrame(loop);
+        }
+
+        // Initial static draw
+        ctx.fillStyle = '#050505';
+        ctx.fillRect(0, 0, width, height);
+
+    </script>
+</body>
+</html>
